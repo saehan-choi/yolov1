@@ -117,4 +117,6 @@ class Yolov1(nn.Module):
             nn.LeakyReLU(0.1),
             nn.Linear(496, S * S * (C + B * 5)),
         )
+
         # 7x7x(num_class + bounding_boxes*5)
+        # model
