@@ -6,7 +6,7 @@
 
 # loss function
 
-    ![image](https://user-images.githubusercontent.com/70372577/134024397-f9ff962f-30ab-413e-bb11-5bdcf8597f33.png)
+![image](https://user-images.githubusercontent.com/70372577/134024397-f9ff962f-30ab-413e-bb11-5bdcf8597f33.png)
 
 
 
