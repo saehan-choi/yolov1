@@ -49,3 +49,39 @@ class VOCDataset(torch.utils.data.Dataset):
             i, j = int(self.S * y), int(self.S * x)
             x_cell, y_cell = self.S * x - j, self.S * y - i
             
+            """
+            Calculating the width and height of cell of bounding box,
+            relative to the cell is done by the following, with
+            width as the example:
+            
+            width_pixels = (width*self.image_width)
+            cell_pixels = (self.image_width)
+            
+            Then to find the width relative to the cell is simply:
+            width_pixels/cell_pixels, simplification leads to the
+            formulas below.
+            """
+
+            width_cell, height_cell = (
+                width * self.S,
+                height * self.S
+            )
+
+            # If no object already found for specific cell i,j
+            # Note: This means we restrict to ONE object
+            # per cell!
+
+            if label_matrix[i, j, 20] == 0:
+                # Set that there exists an object
+                label_matrix[i, j, 20] = 1
+
+                # box coordinates
+                box_coordinates = torch.tensor(
+                    [x_cell, y_cell, width_cell, height_cell]
+                )
+                # torch.tensor는 dtype을 자동으로 유추
+                # torch.Tensor는 dtype을 float32로 사용
+
+                label_matrix[i, j, class_label] = 1
+
+            return image, label_matrix
