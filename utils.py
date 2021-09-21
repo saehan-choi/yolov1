@@ -11,7 +11,7 @@ def intersction_over_union(pred_boxes,label_boxes,box_format="corners"):
         tensor: Intersection over union for all examples
     """
 
-    if box_format == "midpoint"
+    if box_format == "midpoint":
         pred_x1 = pred_boxes[...,0:1] - pred_boxes[...,2:3] / 2 # pred_box[...,2:3] is width
         pred_y1 = pred_boxes[...,1:2] - pred_boxes[...,3:4] / 2 # pred_box[...,3:4] is height
         pred_x2 = pred_boxes[...,0:1] + pred_boxes[...,2:3] / 2
@@ -23,7 +23,7 @@ def intersction_over_union(pred_boxes,label_boxes,box_format="corners"):
         label_y2 = label_boxes[...,1:2] + label_boxes[3:4] / 2
 
     # 영상에서는 if box_format 이던데 안되면 여기 볼 것
-    elif box_format == "corners"
+    elif box_format == "corners":
         pred_x1 = pred_boxes[...,0:1]  # maintain for tensor if you don't do it, tensor will be gone
         # this result is (N,1) but pred_boxes[...,0] result is (N)
         pred_y1 = pred_boxes[...,1:2]
@@ -49,8 +49,7 @@ def intersction_over_union(pred_boxes,label_boxes,box_format="corners"):
 
     return intersection / (pred_area + label_area - intersection)
 
-def non-max-suppression(bboxes, iou_threshold ,threshold, box_format="corners"):
-    
+def non_max_suppression(bboxes, iou_threshold ,threshold, box_format="corners"):
     assert type(bboxes) == list
     # if not bboxes is list it's gonna error
     bboxes = [box for box in bboxes if box[1] > threshold]
@@ -73,7 +72,7 @@ def non-max-suppression(bboxes, iou_threshold ,threshold, box_format="corners"):
             torch.tensor(bboxes[2:]),
             torch.tensor(chosen_box[2:]),
             box_format=box_format
-        ) < iou_threshhold
+        ) < iou_threshold
         ]
 
         bboxes_after_nms.append(chosen_box)
