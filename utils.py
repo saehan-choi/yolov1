@@ -200,8 +200,10 @@ def convert_cellboxes(predictions, S=7):
     best_box = scores.argmax(0).unsqueeze(-1)
     best_boxes = bboxes1 * (1 - best_box) + best_box * bboxes2
     cell_indices = torch.arange(7).repeat(batch_size, 7, 1).unsqueeze(-1)
+    # 내생각엔 torch.zeros(7) 이 되야할 것 같은데..
     # cell_indices.size() -> (batch_size, [0,1,2,...6], number of row(7), [0,1,2,...6]을 몇번 반복할건지)
     # torch.arange(7) -> tensor([0,1,2,3,4,5,6])
+    # (16,7,7,1) 7x1 이 7개 있는게 16개 있음
     x = 1 / S * (best_boxes[..., :1] + cell_indices)
     y = 1 / S * (best_boxes[..., 1:2] + cell_indices.permute(0,2,1,3))
     w_y = 1 / S * best_boxes[..., :20]

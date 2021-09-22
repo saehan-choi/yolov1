@@ -77,13 +77,20 @@ import torch
 # print(b.repeat(4,2,1).size())
 
 
-print(torch.arange(7).repeat(16,7,2).unsqueeze(-1).size())
-print(torch.arange(7).repeat(16,7,1).size())
+# print(torch.arange(7).repeat(16,7,2).unsqueeze(-1).size())
+# print(torch.arange(7).repeat(16,7,1).size())
+# print(torch.arange(7).repeat(16,7,1).unsqueeze(-1).permute(0,2,1,3))
 
-# best_box = torch.tensor([[2,3,1],
-#                         [2,3,5],
-#                         [2,4,5],
-#                         [3,5,1]])
+best_box = torch.tensor([[2,3,1],
+                        [2,3,5],
+                        [2,4,5],
+                        [3,5,1]])
+cell_indices = torch.arange(4).repeat(2, 4, 1).unsqueeze(-1)
+print(best_box.shape)
+print(best_box)
+best_box = best_box[...,0:1]
+# best_box = best_box[...,0:1] + cell_indices
+# print(best_box)
 
 # best_boxes =(1-best_box)
 # print(best_boxes)
@@ -93,3 +100,27 @@ print(torch.arange(7).repeat(16,7,1).size())
 # b = torch.tensor([2,4])
 
 # print(a*b)
+
+
+# x = torch.tensor([[[[2,3,1],
+#                 [2,3,5],
+#                 [2,4,5],
+#                 [3,5,1]],
+
+#                 [[3,4,2],
+#                 [2,4,6],
+#                 [2,4,5],
+#                 [3,5,1]]],
+
+#                 [[[3,4,5],
+#                 [5,4,3],
+#                 [4,5,6],
+#                 [3,5,1]],
+
+#                 [[3,4,2],
+#                 [2,4,6],
+#                 [2,4,5],
+#                 [3,5,1]]]])
+# print(x.shape)
+# # print(x.argmax(0))
+
