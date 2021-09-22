@@ -70,7 +70,7 @@ class YoloLoss(nn.Module):
         box_loss = self.mse(
             # flatten end_dim 이 약간 헷갈림.
             # 4차원 텐서를 2차원 텐서로 만든다고 생각하면 편할듯.
-            torch.flatten(box_target, end_dim=-2)
+            torch.flatten(box_target, end_dim=-2),
             torch.flatten(box_predictions, end_dim=-2)
         )
 
@@ -82,7 +82,7 @@ class YoloLoss(nn.Module):
         # bestbox 가 0이되면 앞의 predictions[...,20:21]의 것 만 나옴 따라서 순서맞음
 
         object_loss = self.mse(
-            torch.flatten(pred_box)
+            torch.flatten(pred_box),
             torch.flatten(target[...,20:21])
         )
 
@@ -91,12 +91,12 @@ class YoloLoss(nn.Module):
         # ======================= #
 
         no_object_loss = self.mse(
-            torch.flatten((1-exists_box) * predictions[...,20:21])
+            torch.flatten((1-exists_box) * predictions[...,20:21]),
             torch.flatten((1-exists_box) * target[...,20:21])
         )
         
         no_object_loss += self.mse(
-            torch.flatten((1-exists_box) * predictions[...,25:26])
+            torch.flatten((1-exists_box) * predictions[...,25:26]),
             torch.flatten((1-exists_box) * target[...,25:26])
         )
 
@@ -106,7 +106,7 @@ class YoloLoss(nn.Module):
 
         # (N,S,S,20) -> (N*S*S,20)
         class_loss = self.mse(
-            torch.flatten(predictions[..., :20], end_dim=-2)
+            torch.flatten(predictions[..., :20], end_dim=-2),
             torch.flatten(target[..., :20], end_dim=-2)
         )
 
