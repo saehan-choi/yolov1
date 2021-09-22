@@ -194,11 +194,23 @@ def convert_cellboxes(predictions, S=7):
     )
 
     # argmax 하고나면 이전에 unsqueeze로 생성된 텐서는 죽어버림
+    # 그리고 argmax는 인덱스값을 반환하기 때문에 1-best_box를 하므로서 
+    # 최댓값 텐서의 인덱스텐서들이 살아남음 
+    # ex) [[1,1,1],[1,1,1]] or [[0,0,0],[0,0,0]]
     best_box = scores.argmax(0).unsqueeze(-1)
     best_boxes = bboxes1 * (1 - best_box) + best_box * bboxes2
     cell_indices = torch.arange(7).repeat(batch_size, 7, 1).unsqueeze(-1)
-
-    # torch.arrange(7) -> tensor([0,1,2,3,4,5,6])
+    # cell_indices.size() -> (batch_size, [0,1,2,...6], number of row(7), [0,1,2,...6]을 몇번 반복할건지)
+    # torch.arange(7) -> tensor([0,1,2,3,4,5,6])
     x = 1 / S * (best_boxes[..., :1] + cell_indices)
-    y = 1 / S * (best_boxes)
-    
+    y = 1 / S * (best_boxes[..., 1:2] + cell_indices.permute(0,2,1,3))
+    w_y = 1 / S * best_boxes[..., :20]
+    converted_bboxes = torch.cat((x, y, w_y), dim=-1)
+    predicted_class = predictions[..., :20].argmax(-1).unsqueeze(-1)
+    best_confidence = torch.max(predictions[..., 20], predictions[..., 25]).unsqueeze(-1)
+
+    converted_preds = torch.cat(
+        (predicted_class, best_confidence, converted_bboxes), dim=-1
+    )
+
+    return converted_preds
