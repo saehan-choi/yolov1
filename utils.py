@@ -198,7 +198,9 @@ def convert_cellboxes(predictions, S=7):
     # 최댓값 텐서의 인덱스텐서들이 살아남음 
     # ex) [[1,1,1],[1,1,1]] or [[0,0,0],[0,0,0]]
     best_box = scores.argmax(0).unsqueeze(-1)
-    best_boxes = bboxes1 * (1 - best_box) + best_box * bboxes2
+    # best_box -> (N,S,S)
+    best_boxes = bboxes1 * (1 - best_box) + bboxes2 * best_box
+    # best_boxes -> (N,S,S,4) * (N,S,S)  (좌표값 텐서 * obj_pred_score텐서)
     cell_indices = torch.arange(7).repeat(batch_size, 7, 1).unsqueeze(-1)
     # 내생각엔 torch.zeros(7) 이 되야할 것 같은데..
     # cell_indices.size() -> (batch_size, [0,1,2,...6], number of row(7), [0,1,2,...6]을 몇번 반복할건지)
@@ -206,13 +208,37 @@ def convert_cellboxes(predictions, S=7):
     # (16,7,7,1) 7x1 이 7개 있는게 16개 있음
     x = 1 / S * (best_boxes[..., :1] + cell_indices)
     y = 1 / S * (best_boxes[..., 1:2] + cell_indices.permute(0,2,1,3))
-    w_y = 1 / S * best_boxes[..., :20]
+    w_y = 1 / S * best_boxes[..., 2:4]
     converted_bboxes = torch.cat((x, y, w_y), dim=-1)
+    # converted_bboxes -> (16,7,7,22)
     predicted_class = predictions[..., :20].argmax(-1).unsqueeze(-1)
     best_confidence = torch.max(predictions[..., 20], predictions[..., 25]).unsqueeze(-1)
 
     converted_preds = torch.cat(
         (predicted_class, best_confidence, converted_bboxes), dim=-1
     )
-
+    # converted_preds -> (16,7,7,25)
     return converted_preds
+
+def cellboxes_to_boxes(out, S=7):
+    converted_pred = convert_cellboxes(out).reshape(out.shape[0], S * S, -1)
+    converted_pred[..., 0] = converted_pred[..., 0].long()
+    all_bboxes = []
+
+    for ex_idx in range(out.shape[0]):
+        bboxes = []
+
+        for bbox_idx in range(S * S):
+            bboxes.append([x.items() for x in converted_pred[ex_idx, bbox_idx, :]])
+        all_bboxes.append(bboxes)
+
+    return all_bboxes
+
+def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
+    print("=> Saving checkpoint")
+    torch.save(state, filename)
+
+def load_checkpoint(checkpoint, model, optimizer):
+    print("=> Loading checkpoint")
+    model.load_state_dict(checkpoint["state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
