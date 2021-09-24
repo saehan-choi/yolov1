@@ -31,6 +31,7 @@ class YoloLoss(nn.Module):
         self.lambda_coord = 5
 
     def forward(self, predictions, target):
+        
         # predictions are shaped (BATCH_SIZE, S*S(C+B*5) when inputted
         predictions = predictions.reshape(-1, self.S, self.S, self.C + self.B * 5)
 
@@ -42,6 +43,8 @@ class YoloLoss(nn.Module):
         # Take the box with highest IoU out of the two prediction
         # Note that bestbox will be indices of 0, 1 for which bbox was best
         iou_maxes, bestbox = torch.max(ious, dim=0)
+        # torch.max는 앞은 실제 max value를 반환, 두번째는 max의 index를 반환
+        # 따라서 앞쪽의 max가 높다면, 
         exists_box = target[..., 20].unsqueeze(3)  # in paper this is Iobj_i
 
         # ======================== #
@@ -56,6 +59,7 @@ class YoloLoss(nn.Module):
                 + (1 - bestbox) * predictions[..., 21:25]
             )
         )
+        # (N,S,S,1)*(N,S,S,4) = (N,S,S,4)
 
         box_target = exists_box * target[..., 21:25]
 
@@ -64,7 +68,7 @@ class YoloLoss(nn.Module):
             #  여기에 1e-6 이거 있었는데 안더했음 어차피 abs해서 필요없을거 같음.
         )
 
-        box_target = torch.sqrt(box_target[2:4])
+        box_target[..., 2:4] = torch.sqrt(box_target[..., 2:4])
 
         # (N,S,S,4) -> (N*S*S,4)
         box_loss = self.mse(
@@ -73,6 +77,8 @@ class YoloLoss(nn.Module):
             torch.flatten(box_target, end_dim=-2),
             torch.flatten(box_predictions, end_dim=-2)
         )
+        # result == (N*S*S,2)
+        # 여기는 mean_squared_error기 때문에 둘의 차원만 똑같으면 결과값은 단일 숫자값으로 나옴
 
         # ==================== #
         #   FOR OBJECT LOSS    #
@@ -82,27 +88,31 @@ class YoloLoss(nn.Module):
         # bestbox 가 0이되면 앞의 predictions[...,20:21]의 것 만 나옴 따라서 순서맞음
 
         object_loss = self.mse(
-            torch.flatten(pred_box),
-            torch.flatten(target[...,20:21])
+            torch.flatten(exists_box * pred_box),
+            torch.flatten(exists_box * target[...,20:21])
         )
+        # result == (N*S*S)
 
         # ======================= #
         #   FOR NO OBJECT LOSS    #
         # ======================= #
 
         no_object_loss = self.mse(
-            torch.flatten((1-exists_box) * predictions[...,20:21]),
-            torch.flatten((1-exists_box) * target[...,20:21])
+            torch.flatten((1-exists_box) * predictions[...,20:21], start_dim=1),
+            torch.flatten((1-exists_box) * target[...,20:21], start_dim=1)
         )
         
         no_object_loss += self.mse(
-            torch.flatten((1-exists_box) * predictions[...,25:26]),
-            torch.flatten((1-exists_box) * target[...,25:26])
+            torch.flatten((1-exists_box) * predictions[...,25:26], start_dim=1),
+            torch.flatten((1-exists_box) * target[...,25:26], start_dim=1)
         )
+        # (N,S,S,1) -> flatten start_dim = 1
+        # result == (N,S*S)
 
         # ================== #
         #   FOR CLASS LOSS   #
-        # ================== #
+        # ================== 
+        # #
 
         # (N,S,S,20) -> (N*S*S,20)
         class_loss = self.mse(
