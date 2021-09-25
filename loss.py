@@ -64,8 +64,12 @@ class YoloLoss(nn.Module):
         box_target = exists_box * target[..., 21:25]
 
         box_predictions[..., 2:4] = torch.sign(box_predictions[..., 2:4]) * torch.sqrt(
-            torch.abs(box_predictions[..., 2:4])
-            #  여기에 1e-6 이거 있었는데 안더했음 어차피 abs해서 필요없을거 같음.
+            torch.abs(box_predictions[..., 2:4] + 1e-6)
+            # 여기에 1e-6 이거 있었는데 안더했음 어차피 abs해서 필요없을거 같음.
+            # ----> 에러의 원인이였음 1e-6을 더해줌으로서 수학적 안정성을 더해준다는데,
+            # 어차피 절댓값을 취하므로 필요하지 않다고 생각했는데 이 값이없을 때
+            # one of the variables needed for gradient computation has been modified by an inplace operation:
+            # 이 에러가 도출됨
         )
 
         box_target[..., 2:4] = torch.sqrt(box_target[..., 2:4])

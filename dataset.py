@@ -33,7 +33,7 @@ class VOCDataset(torch.utils.data.Dataset):
 
         img_path = os.path.join(self.img_dir, self.annotations.iloc[index,0])
         image = Image.open(img_path)
-        boxes = torch.Tensor(boxes)
+        boxes = torch.tensor(boxes)
 
         if self.transform:
             image, boxes = self.transform(image, boxes)
@@ -82,6 +82,7 @@ class VOCDataset(torch.utils.data.Dataset):
                 # torch.tensor는 dtype을 자동으로 유추
                 # torch.Tensor는 dtype을 float32로 사용
 
+                label_matrix[i, j, 21:25] = box_coordinates
                 label_matrix[i, j, class_label] = 1
 
             return image, label_matrix
