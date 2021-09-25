@@ -13,6 +13,15 @@
 
 https://www.kaggle.com/dataset/734b7bcb7ef13a045cbdd007a3c19874c2586ed0b02b4afc86126e89d00af8d2/version/1?select=images
 
+# result
+
+![Figure_1](https://user-images.githubusercontent.com/70372577/134753244-c18c9ac0-d05d-4703-a679-d3ccc06537b7.png)
+![Figure_4](https://user-images.githubusercontent.com/70372577/134753257-5c5fe061-f0f3-4242-8436-a6c52149de08.png)
+![Figure_3](https://user-images.githubusercontent.com/70372577/134753267-3392d2f5-3573-405c-91e7-07dfa73d7aef.png)
+![Figure_2](https://user-images.githubusercontent.com/70372577/134753273-609c26bf-ea98-4a3a-b568-a9b55a8d2454.png)
+
+
+
 
 # where I learned this code
 
